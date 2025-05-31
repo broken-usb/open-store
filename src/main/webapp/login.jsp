@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+    pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,99 +7,130 @@
 <title>Login / Cadastro</title>
 <style>
 body {
-	font-family: Arial, sans-serif;
-	max-width: 400px;
-	margin: 50px auto;
-	padding: 20px;
+    font-family: Arial, sans-serif;
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
 }
 
 .form-container {
-	border: 1px solid #ddd;
-	padding: 20px;
-	border-radius: 5px;
-	margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
 }
 
 input[type="text"], input[type="email"], input[type="password"] {
-	width: 100%;
-	padding: 8px;
-	margin: 5px 0 15px 0;
-	border: 1px solid #ddd;
-	border-radius: 3px;
-	box-sizing: border-box;
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0 15px 0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    box-sizing: border-box;
 }
 
 button {
-	background-color: #4CAF50;
-	color: white;
-	padding: 10px 15px;
-	border: none;
-	border-radius: 3px;
-	cursor: pointer;
-	margin-right: 10px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 10px;
 }
 
 button:hover {
-	background-color: #45a049;
+    background-color: #45a049;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
 }
 
 .toggle-btn {
-	background-color: #008CBA;
+    background-color: #008CBA;
 }
 
 .toggle-btn:hover {
-	background-color: #007B9A;
+    background-color: #007B9A;
 }
 
 .message {
-	padding: 10px;
-	margin: 10px 0;
-	border-radius: 3px;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 3px;
 }
 
 .success {
-	background-color: #d4edda;
-	color: #155724;
-	border: 1px solid #c3e6cb;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }
 
 .error {
-	background-color: #f8d7da;
-	color: #721c24;
-	border: 1px solid #f5c6cb;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.loading {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
 }
 </style>
 </head>
 <body>
-	<h2 id="form-title">Login</h2>
+    <h2 id="form-title">Login</h2>
 
-	<div id="message-container"></div>
+    <div id="message-container"></div>
 
-	<div class="form-container">
-		<form id="user-form">
-			<div id="nome-field" style="display: none;">
-				<label for="nome">Nome:</label> <input type="text" id="nome"
-					name="nome">
-			</div>
+    <div class="form-container">
+        <form id="user-form">
+            <div id="nome-field" style="display: none;">
+                <label for="nome">Nome:</label> 
+                <input type="text" id="nome" name="nome">
+            </div>
 
-			<label for="email">Email:</label> <input type="email" id="email"
-				name="email" required> <label for="senha">Senha:</label> <input
-				type="password" id="senha" name="senha" required>
+            <label for="email">Email:</label> 
+            <input type="email" id="email" name="email" required> 
+            
+            <label for="senha">Senha:</label> 
+            <input type="password" id="senha" name="senha" required>
 
-			<button type="submit" id="submit-btn">Entrar</button>
-			<button type="button" class="toggle-btn" onclick="toggleForm()">Cadastrar</button>
-		</form>
-	</div>
+            <button type="submit" id="submit-btn">Entrar</button>
+            <button type="button" class="toggle-btn" onclick="toggleForm()">Cadastrar</button>
+        </form>
+    </div>
 
-	<div id="usuarios-list" style="display: none;">
-		<h3>Usuários Cadastrados</h3>
-		<div id="usuarios-container"></div>
-		<button onclick="listarUsuarios()">Atualizar Lista</button>
-		<button onclick="voltarLogin()">Voltar ao Login</button>
-	</div>
+    <div id="usuarios-list" style="display: none;">
+        <h3>Usuários Cadastrados</h3>
+        <div id="usuarios-container"></div>
+        <button onclick="listarUsuarios()">Atualizar Lista</button>
+        <button onclick="voltarLogin()">Voltar ao Login</button>
+        <button onclick="logout()">Logout</button>
+    </div>
 
-	<script>
+    <script>
         let isLoginMode = true;
+        const contextPath = '<%= request.getContextPath() %>';
         
         function toggleForm() {
             const formTitle = document.getElementById('form-title');
@@ -130,58 +161,103 @@ button:hover {
         
         function showMessage(message, type) {
             const container = document.getElementById('message-container');
-            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+            container.innerHTML = '<div class="message ' + type + '">' + message + '</div>';
         }
         
         function clearMessages() {
             document.getElementById('message-container').innerHTML = '';
         }
         
+        function setLoading(isLoading) {
+            const submitBtn = document.getElementById('submit-btn');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            
+            submitBtn.disabled = isLoading;
+            toggleBtn.disabled = isLoading;
+            
+            if (isLoading) {
+                showMessage('Processando...', 'loading');
+            }
+        }
+        
         document.getElementById('user-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const senha = document.getElementById('senha').value;
-            const nome = document.getElementById('nome').value;
+            const nome = document.getElementById('nome').value.trim();
+            
+            if (!email || !senha) {
+                showMessage('Email e senha são obrigatórios!', 'error');
+                return;
+            }
+            
+            if (!isLoginMode && !nome) {
+                showMessage('Nome é obrigatório para cadastro!', 'error');
+                return;
+            }
+            
+            setLoading(true);
             
             if (isLoginMode) {
-                // Login - simular autenticação
-                fetch('/usuarios')
-                    .then(response => response.json())
-                    .then(usuarios => {
-                        const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-                        if (usuario) {
-                            showMessage(`Bem-vindo, ${usuario.nome}!`, 'success');
-                            setTimeout(() => {
-                                document.querySelector('.form-container').style.display = 'none';
-                                document.getElementById('usuarios-list').style.display = 'block';
-                                listarUsuarios();
-                            }, 1500);
-                        } else {
-                            showMessage('Email ou senha incorretos!', 'error');
-                        }
-                    })
-                    .catch(error => {
-                        showMessage('Erro ao fazer login!', 'error');
-                        console.error('Error:', error);
-                    });
-            } else {
-                // Cadastro
-                const formData = new FormData();
-                formData.append('nome', nome);
-                formData.append('email', email);
-                formData.append('senha', senha);
+                // Login usando servlet dedicado
+                const params = new URLSearchParams();
+                params.append('email', email);
+                params.append('senha', senha);
                 
-                fetch('/usuarios', {
+                fetch(contextPath + '/login', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params
                 })
                 .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error('Erro no cadastro');
-                    }
+                    return response.json().then(data => {
+                        if (response.ok) {
+                            return data;
+                        } else {
+                            throw new Error(data.erro || 'Erro no login');
+                        }
+                    });
+                })
+                .then(usuario => {
+                    showMessage('Bem-vindo, ' + usuario.nome + '!', 'success');
+                    setTimeout(() => {
+                        document.querySelector('.form-container').style.display = 'none';
+                        document.getElementById('usuarios-list').style.display = 'block';
+                        listarUsuarios();
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Erro no login:', error);
+                    showMessage(error.message || 'Erro ao fazer login!', 'error');
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+            } else {
+                // Cadastro
+                const params = new URLSearchParams();
+                params.append('nome', nome);
+                params.append('email', email);
+                params.append('senha', senha);
+                
+                fetch(contextPath + '/usuarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params
+                })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (response.ok) {
+                            return data;
+                        } else {
+                            throw new Error(data.erro || 'Erro no cadastro');
+                        }
+                    });
                 })
                 .then(data => {
                     showMessage('Usuário cadastrado com sucesso!', 'success');
@@ -192,37 +268,58 @@ button:hover {
                     }, 1500);
                 })
                 .catch(error => {
-                    showMessage('Erro ao cadastrar usuário!', 'error');
-                    console.error('Error:', error);
+                    console.error('Erro no cadastro:', error);
+                    showMessage(error.message || 'Erro ao cadastrar usuário!', 'error');
+                })
+                .finally(() => {
+                    setLoading(false);
                 });
             }
         });
         
         function listarUsuarios() {
-            fetch('/usuarios')
-                .then(response => response.json())
+            fetch(contextPath + '/usuarios')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar usuários');
+                    }
+                    return response.json();
+                })
                 .then(usuarios => {
                     const container = document.getElementById('usuarios-container');
                     if (usuarios.length === 0) {
                         container.innerHTML = '<p>Nenhum usuário cadastrado.</p>';
                     } else {
-                        let html = '<table border="1" style="width: 100%; border-collapse: collapse;">';
+                        let html = '<table>';
                         html += '<tr><th>ID</th><th>Nome</th><th>Email</th></tr>';
                         usuarios.forEach(usuario => {
-                            html += `<tr>
-                                <td>${usuario.id}</td>
-                                <td>${usuario.nome}</td>
-                                <td>${usuario.email}</td>
-                            </tr>`;
+                            html += '<tr>';
+                            html += '<td>' + usuario.id + '</td>';
+                            html += '<td>' + usuario.nome + '</td>';
+                            html += '<td>' + usuario.email + '</td>';
+                            html += '</tr>';
                         });
                         html += '</table>';
                         container.innerHTML = html;
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('Erro ao listar usuários:', error);
                     document.getElementById('usuarios-container').innerHTML = '<p>Erro ao carregar usuários.</p>';
                 });
+        }
+        
+        function logout() {
+            fetch(contextPath + '/login', {
+                method: 'GET'
+            })
+            .then(() => {
+                voltarLogin();
+            })
+            .catch(error => {
+                console.error('Erro no logout:', error);
+                voltarLogin(); // Voltar mesmo com erro
+            });
         }
         
         function voltarLogin() {
@@ -232,6 +329,22 @@ button:hover {
             clearMessages();
             if (!isLoginMode) toggleForm();
         }
+        
+        // Teste de conectividade ao carregar a página
+        window.addEventListener('load', function() {
+            fetch(contextPath + '/usuarios')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Conexão com o servidor OK');
+                    } else {
+                        console.warn('Problema na conexão com o servidor');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro de conectividade:', error);
+                    showMessage('Problema de conexão com o servidor', 'error');
+                });
+        });
     </script>
 </body>
 </html>
