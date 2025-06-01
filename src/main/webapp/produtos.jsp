@@ -1,5 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ page import="modelo.entidade.Usuario"%>
+<%
+// Verificar se o usuário está logado (adicional ao filtro)
+Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
+if (usuarioLogado == null) {
+	response.sendRedirect("login.jsp");
+	return;
+}
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,6 +43,17 @@ h1 {
 	margin-bottom: 20px;
 }
 
+.user-info {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.user-welcome {
+	font-weight: bold;
+	color: #4CAF50;
+}
+
 .btn {
 	padding: 10px 20px;
 	border: none;
@@ -60,6 +80,11 @@ h1 {
 	color: white;
 }
 
+.btn-warning {
+	background-color: #ff9800;
+	color: white;
+}
+
 .btn:hover {
 	opacity: 0.8;
 }
@@ -68,6 +93,11 @@ h1 {
 	padding: 5px 10px;
 	font-size: 12px;
 	margin: 0 2px;
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
 }
 
 table {
@@ -92,6 +122,10 @@ tr:hover {
 	background-color: #f5f5f5;
 }
 
+.meu-produto {
+	background-color: #e8f5e8;
+}
+
 .preco {
 	text-align: right;
 	font-weight: bold;
@@ -100,7 +134,7 @@ tr:hover {
 
 .acoes {
 	text-align: center;
-	width: 150px;
+	width: 180px;
 }
 
 .loading {
@@ -211,6 +245,23 @@ tr:hover {
 	border-radius: 4px;
 	width: 300px;
 }
+
+.filter-buttons {
+	margin-bottom: 20px;
+}
+
+.filter-buttons button {
+	margin-right: 10px;
+}
+
+.owner-badge {
+	background-color: #4CAF50;
+	color: white;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 11px;
+	font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -218,13 +269,24 @@ tr:hover {
 		<h1>Gerenciamento de Produtos</h1>
 
 		<div class="header-actions">
-			<div class="search-bar">
-				<input type="text" id="campoBusca"
-					placeholder="Buscar produtos por nome..."
-					onkeyup="buscarProdutos()">
+			<div class="user-info">
+				<span class="user-welcome">Bem-vindo, <%=usuarioLogado.getNome()%>!
+				</span> <a href="login?logout=true" class="btn btn-warning">Logout</a>
 			</div>
 			<button class="btn btn-primary" onclick="abrirModalProduto()">
 				Adicionar Produto</button>
+		</div>
+
+		<div class="filter-buttons">
+			<button class="btn btn-secondary" id="btnTodos"
+				onclick="filtrarProdutos('todos')">Todos os Produtos</button>
+			<button class="btn btn-primary" id="btnMeus"
+				onclick="filtrarProdutos('meus')">Meus Produtos</button>
+		</div>
+
+		<div class="search-bar">
+			<input type="text" id="campoBusca"
+				placeholder="Buscar produtos por nome..." onkeyup="buscarProdutos()">
 		</div>
 
 		<div id="loading" class="loading">Carregando produtos...</div>
@@ -276,13 +338,6 @@ tr:hover {
 						name="preco" step="0.01" min="0" required>
 				</div>
 
-				<div class="form-group">
-					<label for="idUsuario">Usuário:</label> <select id="idUsuario"
-						name="idUsuario" required>
-						<option value="">Selecione um usuário</option>
-					</select>
-				</div>
-
 				<div class="form-actions">
 					<button type="button" class="btn" onclick="fecharModalProduto()">Cancelar</button>
 					<button type="submit" id="btnSalvar" class="btn btn-primary">Salvar</button>
@@ -293,7 +348,15 @@ tr:hover {
 
 	<script>
         let produtoAtual = null;
-        let usuarios = [];
+        let todosProdutos = []; // Cache de todos os produtos
+        let filtroAtual = 'todos'; // 'todos' ou 'meus'
+        
+        // Dados do usuário logado
+        const usuarioLogado = {
+            id: <%=usuarioLogado.getId()%>,
+            nome: '<%=usuarioLogado.getNome()%>',
+            email: '<%=usuarioLogado.getEmail()%>'
+        };
 
         // Função para formatar preço em Real
         function formatarPreco(preco) {
@@ -310,25 +373,27 @@ tr:hover {
             }, 3000);
         }
 
-        // Função para carregar usuários
-        function carregarUsuarios() {
-            fetch('usuarios')
-                .then(response => response.json())
-                .then(data => {
-                    usuarios = data;
-                    const select = document.getElementById('idUsuario');
-                    select.innerHTML = '<option value="">Selecione um usuário</option>';
-                    
-                    usuarios.forEach(usuario => {
-                        const option = document.createElement('option');
-                        option.value = usuario.id;
-                        option.textContent = usuario.nome;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar usuários:', error);
-                });
+        // Função para verificar se o produto pertence ao usuário logado
+        function ehMeuProduto(produto) {
+            return produto.usuario && produto.usuario.id === usuarioLogado.id;
+        }
+
+        // Função para filtrar produtos
+        function filtrarProdutos(tipo) {
+            filtroAtual = tipo;
+            
+            // Atualizar estado dos botões
+            document.getElementById('btnTodos').className = tipo === 'todos' ? 'btn btn-primary' : 'btn btn-secondary';
+            document.getElementById('btnMeus').className = tipo === 'meus' ? 'btn btn-primary' : 'btn btn-secondary';
+            
+            let produtosFiltrados;
+            if (tipo === 'meus') {
+                produtosFiltrados = todosProdutos.filter(produto => ehMeuProduto(produto));
+            } else {
+                produtosFiltrados = todosProdutos;
+            }
+            
+            renderizarProdutos(produtosFiltrados);
         }
         
         // Função para carregar produtos
@@ -347,13 +412,15 @@ tr:hover {
                 })
                 .then(produtos => {
                     document.getElementById('loading').style.display = 'none';
+                    todosProdutos = produtos;
                     
                     if (produtos.length === 0) {
                         document.getElementById('empty').style.display = 'block';
                         return;
                     }
                     
-                    renderizarProdutos(produtos);
+                    // Aplicar filtro atual
+                    filtrarProdutos(filtroAtual);
                 })
                 .catch(error => {
                     console.error('Erro:', error);
@@ -367,49 +434,70 @@ tr:hover {
             const corpoTabela = document.getElementById('corpoTabela');
             corpoTabela.innerHTML = '';
             
+            if (produtos.length === 0) {
+                document.getElementById('tabelaProdutos').style.display = 'none';
+                document.getElementById('empty').style.display = 'block';
+                return;
+            }
+            
             produtos.forEach(produto => {
                 const linha = document.createElement('tr');
+                const isMeuProduto = ehMeuProduto(produto);
+                
+                if (isMeuProduto) {
+                    linha.className = 'meu-produto';
+                }
+                
+                let acoes = '<button class="btn btn-secondary btn-small" onclick="comprarProduto(' + produto.id + ')">Comprar</button>';
+                
+                if (isMeuProduto) {
+                    acoes += '<button class="btn btn-primary btn-small" onclick="editarProduto(' + produto.id + ')">Editar</button>' +
+                            '<button class="btn btn-danger btn-small" onclick="excluirProduto(' + produto.id + ')">Excluir</button>';
+                }
+                
+                let nomeUsuario = produto.usuario ? produto.usuario.nome : 'N/A';
+                if (isMeuProduto) {
+                    nomeUsuario += ' <span class="owner-badge">SEUS</span>';
+                }
                 
                 linha.innerHTML = 
                     '<td>' + produto.id + '</td>' +
                     '<td>' + produto.nome + '</td>' +
                     '<td>' + (produto.descricao || '-') + '</td>' +
                     '<td class="preco">' + formatarPreco(produto.preco) + '</td>' +
-                    '<td>' + (produto.usuario ? produto.usuario.nome : 'N/A') + '</td>' +
-                    '<td class="acoes">' +
-                        '<button class="btn btn-secondary btn-small" onclick="comprarProduto(' + produto.id + ')">Comprar</button>' +
-                        '<button class="btn btn-primary btn-small" onclick="editarProduto(' + produto.id + ')">Editar</button>' +
-                        '<button class="btn btn-danger btn-small" onclick="excluirProduto(' + produto.id + ')">Excluir</button>' +
-                    '</td>';
+                    '<td>' + nomeUsuario + '</td>' +
+                    '<td class="acoes">' + acoes + '</td>';
                 
                 corpoTabela.appendChild(linha);
             });
             
             document.getElementById('tabelaProdutos').style.display = 'table';
+            document.getElementById('empty').style.display = 'none';
         }
 
         // Função para buscar produtos por nome
         function buscarProdutos() {
-            const termo = document.getElementById('campoBusca').value.trim();
+            const termo = document.getElementById('campoBusca').value.trim().toLowerCase();
             
             if (termo === '') {
-                carregarProdutos();
+                filtrarProdutos(filtroAtual);
                 return;
             }
 
-            fetch('produtos?nome=' + encodeURIComponent(termo))
-                .then(response => response.json())
-                .then(produtos => {
-                    renderizarProdutos(produtos);
-                })
-                .catch(error => {
-                    console.error('Erro na busca:', error);
-                });
+            let produtosFiltrados = todosProdutos.filter(produto => 
+                produto.nome.toLowerCase().includes(termo)
+            );
+            
+            // Aplicar filtro adicional se necessário
+            if (filtroAtual === 'meus') {
+                produtosFiltrados = produtosFiltrados.filter(produto => ehMeuProduto(produto));
+            }
+            
+            renderizarProdutos(produtosFiltrados);
         }
 
-        // Função para comprar produto (redireciona para pedidos.jsp)
+        // Função para comprar produto
         function comprarProduto(idProduto) {
-            // Redireciona para a página de pedidos com o ID do produto
             window.location.href = 'pedidos.jsp?produtoId=' + idProduto;
         }
 
@@ -430,28 +518,43 @@ tr:hover {
 
         // Função para editar produto
         function editarProduto(id) {
-            fetch('produtos?id=' + id)
-                .then(response => response.json())
-                .then(produto => {
-                    produtoAtual = produto;
-                    document.getElementById('tituloModal').textContent = 'Editar Produto';
-                    document.getElementById('btnSalvar').textContent = 'Atualizar';
-                    document.getElementById('produtoId').value = produto.id;
-                    document.getElementById('nome').value = produto.nome;
-                    document.getElementById('descricao').value = produto.descricao || '';
-                    document.getElementById('preco').value = produto.preco;
-                    document.getElementById('idUsuario').value = produto.usuario ? produto.usuario.id : '';
-                    document.getElementById('modalProduto').style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar produto:', error);
-                    alert('Erro ao carregar dados do produto');
-                });
+            const produto = todosProdutos.find(p => p.id === id);
+            
+            if (!produto) {
+                alert('Produto não encontrado');
+                return;
+            }
+            
+            if (!ehMeuProduto(produto)) {
+                alert('Você só pode editar seus próprios produtos');
+                return;
+            }
+            
+            produtoAtual = produto;
+            document.getElementById('tituloModal').textContent = 'Editar Produto';
+            document.getElementById('btnSalvar').textContent = 'Atualizar';
+            document.getElementById('produtoId').value = produto.id;
+            document.getElementById('nome').value = produto.nome;
+            document.getElementById('descricao').value = produto.descricao || '';
+            document.getElementById('preco').value = produto.preco;
+            document.getElementById('modalProduto').style.display = 'block';
         }
 
         // Função para excluir produto
         function excluirProduto(id) {
-            if (confirm('Tem certeza que deseja excluir este produto?')) {
+            const produto = todosProdutos.find(p => p.id === id);
+            
+            if (!produto) {
+                alert('Produto não encontrado');
+                return;
+            }
+            
+            if (!ehMeuProduto(produto)) {
+                alert('Você só pode excluir seus próprios produtos');
+                return;
+            }
+            
+            if (confirm('Tem certeza que deseja excluir o produto "' + produto.nome + '"?')) {
                 fetch('produtos?id=' + id, {
                     method: 'DELETE'
                 })
@@ -460,12 +563,14 @@ tr:hover {
                         mostrarSucesso('Produto excluído com sucesso!');
                         carregarProdutos();
                     } else {
-                        throw new Error('Erro ao excluir produto');
+                        return response.json().then(error => {
+                            throw new Error(error.erro || 'Erro ao excluir produto');
+                        });
                     }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert('Erro ao excluir produto');
+                    alert('Erro ao excluir produto: ' + error.message);
                 });
             }
         }
@@ -479,7 +584,7 @@ tr:hover {
                 nome: formData.get('nome'),
                 descricao: formData.get('descricao'),
                 preco: parseFloat(formData.get('preco')),
-                idUsuario: parseInt(formData.get('idUsuario'))
+                idUsuario: usuarioLogado.id // Sempre usar o usuário logado
             };
 
             let url = 'produtos';
@@ -501,7 +606,9 @@ tr:hover {
                 if (response.ok) {
                     return response.json();
                 } else {
-                    throw new Error('Erro ao salvar produto');
+                    return response.json().then(error => {
+                        throw new Error(error.erro || 'Erro ao salvar produto');
+                    });
                 }
             })
             .then(result => {
@@ -511,13 +618,12 @@ tr:hover {
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao salvar produto. Verifique os dados e tente novamente.');
+                alert('Erro ao salvar produto: ' + error.message);
             });
         }
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            carregarUsuarios();
             carregarProdutos();
         });
 
