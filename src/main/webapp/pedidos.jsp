@@ -15,211 +15,405 @@ if (usuarioLogado == null) {
 <meta charset="UTF-8">
 <title>Finalizar Compra</title>
 <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-	font-family: Arial, sans-serif;
-	max-width: 600px;
-	margin: 50px auto;
-	padding: 20px;
-	background-color: #f5f5f5;
+    font-family: 'Ubuntu', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    min-height: 100vh;
+    color: #ffffff;
+    line-height: 1.6;
 }
 
 .container {
-	background-color: white;
-	padding: 30px;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-h1 {
-	color: #333;
-	text-align: center;
-	margin-bottom: 30px;
+.main-card {
+    background: rgba(40, 40, 40, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    border: 1px solid rgba(230, 126, 34, 0.2);
+}
+
+.header {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    padding: 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></svg>');
+    opacity: 0.3;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: white;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.content {
+    padding: 40px;
+}
+
+#message-container {
+    margin-bottom: 30px;
 }
 
 .produto-info {
-	background-color: #f9f9f9;
-	padding: 20px;
-	border-radius: 5px;
-	margin-bottom: 20px;
-	border-left: 4px solid #4CAF50;
+    background: linear-gradient(135deg, rgba(230, 126, 34, 0.1) 0%, rgba(211, 84, 0, 0.1) 100%);
+    border: 1px solid rgba(230, 126, 34, 0.3);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.produto-info::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #e67e22 0%, #d35400 100%);
+}
+
+.produto-info h3 {
+    color: #e67e22;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.produto-info #produto-detalhes {
+    color: #cccccc;
+    line-height: 1.8;
 }
 
 .form-group {
-	margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 label {
-	display: block;
-	margin-bottom: 5px;
-	font-weight: bold;
-	color: #333;
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #e67e22;
+    font-size: 1.1rem;
 }
 
 input[type="email"], select {
-	width: 100%;
-	padding: 10px;
-	border: 2px solid #ddd;
-	border-radius: 4px;
-	box-sizing: border-box;
-	font-size: 16px;
+    width: 100%;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(230, 126, 34, 0.3);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
 input[type="email"]:focus, select:focus {
-	border-color: #4CAF50;
-	outline: none;
+    border-color: #e67e22;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+input[type="email"]::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+small {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
 }
 
 .buttons {
-	text-align: center;
-	margin-top: 30px;
+    text-align: center;
+    margin-top: 40px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 button {
-	padding: 12px 25px;
-	margin: 0 10px;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 16px;
-	font-weight: bold;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    min-width: 140px;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
 }
 
 .btn-finalizar {
-	background-color: #4CAF50;
-	color: white;
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
 }
 
 .btn-finalizar:hover {
-	background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(230, 126, 34, 0.6);
 }
 
 .btn-cancelar {
-	background-color: #f44336;
-	color: white;
+    background: linear-gradient(135deg, #666666 0%, #555555 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 102, 102, 0.3);
 }
 
 .btn-cancelar:hover {
-	background-color: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 102, 102, 0.5);
 }
 
 .btn-voltar {
-	background-color: #2196F3;
-	color: white;
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
 }
 
 .btn-voltar:hover {
-	background-color: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(230, 126, 34, 0.6);
 }
 
 .message {
-	padding: 15px;
-	margin: 20px 0;
-	border-radius: 4px;
-	text-align: center;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    backdrop-filter: blur(5px);
+    border: 1px solid;
 }
 
 .success {
-	background-color: #d4edda;
-	color: #155724;
-	border: 1px solid #c3e6cb;
+    background: rgba(39, 174, 96, 0.2);
+    color: #2ecc71;
+    border-color: rgba(39, 174, 96, 0.4);
 }
 
 .error {
-	background-color: #f8d7da;
-	color: #721c24;
-	border: 1px solid #f5c6cb;
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.4);
 }
 
 .preco {
-	font-size: 24px;
-	font-weight: bold;
-	color: #2196F3;
-	text-align: center;
-	margin: 20px 0;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: #e67e22;
+    text-align: center;
+    margin: 25px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .success-container {
-	text-align: center;
-	padding: 40px 20px;
+    text-align: center;
+    padding: 50px 40px;
 }
 
 .success-icon {
-	font-size: 48px;
-	color: #4CAF50;
-	margin-bottom: 20px;
+    font-size: 4rem;
+    color: #2ecc71;
+    margin-bottom: 25px;
+    text-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 .success-title {
-	font-size: 28px;
-	color: #4CAF50;
-	margin-bottom: 20px;
-	font-weight: bold;
+    font-size: 2.5rem;
+    color: #2ecc71;
+    margin-bottom: 25px;
+    font-weight: 300;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .pedido-detalhes {
-	background-color: #f9f9f9;
-	padding: 20px;
-	border-radius: 5px;
-	margin: 20px 0;
-	text-align: left;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(230, 126, 34, 0.2);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 30px 0;
+    text-align: left;
+    backdrop-filter: blur(5px);
+}
+
+.pedido-detalhes h4 {
+    color: #e67e22;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.pedido-detalhes p {
+    margin-bottom: 12px;
+    color: #cccccc;
+    line-height: 1.6;
+}
+
+.pedido-detalhes strong {
+    color: #e67e22;
 }
 
 .hidden {
-	display: none;
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .content {
+        padding: 25px;
+    }
+    
+    .header {
+        padding: 25px;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    button {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* Loading Animation */
+@keyframes loading {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.loading {
+    animation: loading 1.5s infinite;
 }
 </style>
 </head>
 <body>
-	<div class="container">
-		<h1>Finalizar Compra</h1>
+    <div class="container">
+        <div class="main-card">
+            <div class="header">
+                <h1>Finalizar Compra</h1>
+            </div>
+            
+            <div class="content">
+                <div id="message-container"></div>
 
-		<div id="message-container"></div>
+                <!-- Formulário de compra -->
+                <div id="compra-form-container">
+                    <div id="produto-info" class="produto-info">
+                        <h3>Produto Selecionado</h3>
+                        <div id="produto-detalhes" class="loading">Carregando...</div>
+                        <div id="produto-preco" class="preco"></div>
+                    </div>
 
-		<!-- Formulário de compra -->
-		<div id="compra-form-container">
-			<div id="produto-info" class="produto-info">
-				<h3>Produto Selecionado</h3>
-				<div id="produto-detalhes">Carregando...</div>
-				<div id="produto-preco" class="preco"></div>
-			</div>
+                    <form id="pedido-form">
+                        <div class="form-group">
+                            <label for="email-comprador">Seu Email:</label> 
+                            <input type="email" id="email-comprador" name="email" required
+                                placeholder="Digite seu email para identificação"
+                                value="<%=usuarioLogado.getEmail()%>" readonly> 
+                            <small>Email do usuário logado</small>
+                        </div>
 
-			<form id="pedido-form">
-				<div class="form-group">
-					<label for="email-comprador">Seu Email:</label> <input type="email"
-						id="email-comprador" name="email" required
-						placeholder="Digite seu email para identificação"
-						value="<%=usuarioLogado.getEmail()%>" readonly> <small
-						style="color: #666;">Email do usuário logado</small>
-				</div>
+                        <div class="buttons">
+                            <button type="submit" class="btn-finalizar">Finalizar Compra</button>
+                            <button type="button" class="btn-cancelar" onclick="cancelarCompra()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
 
-				<div class="buttons">
-					<button type="submit" class="btn-finalizar">Finalizar
-						Compra</button>
-					<button type="button" class="btn-cancelar"
-						onclick="cancelarCompra()">Cancelar</button>
-				</div>
-			</form>
-		</div>
+                <!-- Tela de sucesso -->
+                <div id="success-container" class="success-container hidden">
+                    <div class="success-icon">✓</div>
+                    <div class="success-title">Pedido feito!</div>
+                    <div class="success message">Sua compra foi realizada com sucesso!</div>
 
-		<!-- Tela de sucesso -->
-		<div id="success-container" class="success-container hidden">
-			<div class="success-icon">✓</div>
-			<div class="success-title">Pedido feito!</div>
-			<div class="success message">Sua compra foi realizada com
-				sucesso!</div>
+                    <div id="pedido-detalhes" class="pedido-detalhes">
+                        <!-- Detalhes do pedido serão preenchidos aqui -->
+                    </div>
 
-			<div id="pedido-detalhes" class="pedido-detalhes">
-				<!-- Detalhes do pedido serão preenchidos aqui -->
-			</div>
+                    <div class="buttons">
+                        <button type="button" class="btn-voltar" onclick="voltarProdutos()">
+                            Voltar aos Produtos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-			<div class="buttons">
-				<button type="button" class="btn-voltar" onclick="voltarProdutos()">
-					Voltar aos Produtos</button>
-			</div>
-		</div>
-	</div>
-
-	<script>
+    <script>
         let produtoId = null;
         let produtoAtual = null;
         
@@ -272,7 +466,9 @@ button {
                 })
                 .then(produto => {
                     produtoAtual = produto;
-                    document.getElementById('produto-detalhes').innerHTML = `
+                    const detalhesElement = document.getElementById('produto-detalhes');
+                    detalhesElement.classList.remove('loading');
+                    detalhesElement.innerHTML = `
                         <strong>${produto.nome}</strong><br>
                         ${produto.descricao || 'Sem descrição'}<br>
                         <small>Vendedor: ${produto.usuario ? produto.usuario.nome : 'N/A'}</small>
@@ -281,6 +477,7 @@ button {
                 })
                 .catch(error => {
                     console.error('Erro:', error);
+                    document.getElementById('produto-detalhes').classList.remove('loading');
                     showMessage('Erro ao carregar produto!', 'error');
                 });
         }
@@ -289,7 +486,7 @@ button {
             // Ocultar formulário de compra
             document.getElementById('compra-form-container').classList.add('hidden');
             
-            // Preencher detalhes do pedido - CORREÇÃO: usar concatenação em vez de template literals
+            // Preencher detalhes do pedido
             document.getElementById('pedido-detalhes').innerHTML = 
                 '<h4>Detalhes do Pedido</h4>' +
                 '<p><strong>Número do Pedido:</strong> #' + pedido.id + '</p>' +
@@ -316,7 +513,7 @@ button {
                 return;
             }
             
-            // Criar pedido usando JSON (formato esperado pelo servlet)
+            // Criar pedido usando JSON
             const pedidoData = {
                 idProduto: parseInt(produtoId),
                 idComprador: usuarioLogado.id

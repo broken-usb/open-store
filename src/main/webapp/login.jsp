@@ -13,128 +13,366 @@ if (session.getAttribute("usuario") != null) {
 <meta charset="UTF-8">
 <title>Login / Cadastro</title>
 <style>
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
 body {
-	font-family: Arial, sans-serif;
-	max-width: 400px;
-	margin: 50px auto;
+	font-family: 'Ubuntu', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	max-width: 450px;
+	margin: 0 auto;
 	padding: 20px;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 50%, #0f0f0f 100%);
 	min-height: 100vh;
+	position: relative;
+	overflow-x: hidden;
 }
 
+/* Efeito de círculos no fundo */
+body::before {
+	content: '';
+	position: fixed;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: radial-gradient(circle at 20% 80%, rgba(255, 95, 21, 0.1) 0%,
+		transparent 50%),
+		radial-gradient(circle at 80% 20%, rgba(255, 95, 21, 0.05) 0%,
+		transparent 50%),
+		radial-gradient(circle at 40% 40%, rgba(255, 95, 21, 0.03) 0%,
+		transparent 50%);
+	z-index: -1;
+	animation: float 20s ease-in-out infinite;
+}
+
+@
+keyframes float { 0%, 100% {
+	transform: translate(0, 0) rotate(0deg);
+}
+
+33
+%
+{
+transform
+:
+translate(
+30px
+,
+-30px
+)
+rotate(
+120deg
+);
+}
+66
+%
+{
+transform
+:
+translate(
+-20px
+,
+20px
+)
+rotate(
+240deg
+);
+}
+}
 .form-container {
-	background: white;
-	border-radius: 10px;
-	padding: 30px;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+	background: linear-gradient(145deg, #333333 0%, #2a2a2a 100%);
+	border-radius: 16px;
+	padding: 40px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px
+		rgba(255, 95, 21, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 	margin-bottom: 20px;
+	border: 1px solid rgba(255, 95, 21, 0.2);
+	backdrop-filter: blur(10px);
+	position: relative;
+	overflow: hidden;
 }
 
+.form-container::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(90deg, #ff5f15 0%, #ff8c42 50%, #ff5f15 100%);
+	background-size: 200% 100%;
+	animation: shimmer 3s ease-in-out infinite;
+}
+
+@
+keyframes shimmer { 0%, 100% {
+	background-position: 200% 0;
+}
+
+50
+%
+{
+background-position
+:
+-200%
+0;
+}
+}
 .header {
 	text-align: center;
-	margin-bottom: 30px;
+	margin-bottom: 35px;
 }
 
 .header h2 {
-	color: #333;
+	color: #ffffff;
 	margin: 0;
-	font-size: 28px;
+	font-size: 32px;
+	font-weight: 300;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+	position: relative;
+}
+
+.header h2::after {
+	content: '';
+	position: absolute;
+	bottom: -8px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 60px;
+	height: 2px;
+	background: linear-gradient(90deg, #ff5f15, #ff8c42);
+	border-radius: 1px;
 }
 
 input[type="text"], input[type="email"], input[type="password"] {
 	width: 100%;
-	padding: 12px;
-	margin: 8px 0 15px 0;
-	border: 2px solid #ddd;
-	border-radius: 6px;
+	padding: 16px 20px;
+	margin: 8px 0 20px 0;
+	border: 2px solid #444444;
+	border-radius: 8px;
 	box-sizing: border-box;
 	font-size: 16px;
-	transition: border-color 0.3s;
+	background: #2a2a2a;
+	color: #ffffff;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	font-family: inherit;
+}
+
+input[type="text"]::placeholder, input[type="email"]::placeholder, input[type="password"]::placeholder
+	{
+	color: #888888;
 }
 
 input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus
 	{
-	border-color: #667eea;
+	border-color: #ff5f15;
 	outline: none;
+	background: #333333;
+	box-shadow: 0 0 0 3px rgba(255, 95, 21, 0.2), 0 4px 12px
+		rgba(255, 95, 21, 0.1);
+	transform: translateY(-1px);
 }
 
 .checkbox-container {
 	display: flex;
 	align-items: center;
-	margin: 15px 0;
+	margin: 20px 0;
+	color: #cccccc;
 }
 
 .checkbox-container input[type="checkbox"] {
-	margin-right: 8px;
-	width: auto;
+	margin-right: 12px;
+	width: 18px;
+	height: 18px;
+	accent-color: #ff5f15;
+	cursor: pointer;
+}
+
+.checkbox-container label {
+	cursor: pointer;
+	user-select: none;
+	transition: color 0.2s;
+}
+
+.checkbox-container:hover label {
+	color: #ff8c42;
 }
 
 button {
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	color: white;
-	padding: 12px 20px;
+	background: linear-gradient(135deg, #ff5f15 0%, #ff8c42 100%);
+	color: #ffffff;
+	padding: 16px 24px;
 	border: none;
-	border-radius: 6px;
+	border-radius: 8px;
 	cursor: pointer;
 	margin-right: 10px;
 	font-size: 16px;
-	font-weight: bold;
-	transition: transform 0.2s;
+	font-weight: 500;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	width: 100%;
-	margin-bottom: 10px;
+	margin-bottom: 15px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	position: relative;
+	overflow: hidden;
+	box-shadow: 0 4px 15px rgba(255, 95, 21, 0.3);
+}
+
+button::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2),
+		transparent);
+	transition: left 0.5s;
 }
 
 button:hover {
 	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(255, 95, 21, 0.4);
+	background: linear-gradient(135deg, #ff6b1a 0%, #ff9447 100%);
+}
+
+button:hover::before {
+	left: 100%;
+}
+
+button:active {
+	transform: translateY(0);
 }
 
 button:disabled {
-	background: #cccccc;
+	background: linear-gradient(135deg, #666666 0%, #555555 100%);
 	cursor: not-allowed;
 	transform: none;
+	box-shadow: none;
+	color: #999999;
 }
 
 .toggle-btn {
-	background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-	color: #333;
-	width: 100%;
+	background: linear-gradient(135deg, #444444 0%, #333333 100%);
+	color: #ff8c42;
+	border: 2px solid #ff5f15;
+	font-weight: 400;
+	text-transform: none;
+	letter-spacing: normal;
+}
+
+.toggle-btn:hover {
+	background: linear-gradient(135deg, #555555 0%, #444444 100%);
+	color: #ffffff;
+	border-color: #ff8c42;
+	box-shadow: 0 8px 25px rgba(255, 95, 21, 0.2);
 }
 
 .message {
-	padding: 15px;
-	margin: 15px 0;
-	border-radius: 6px;
+	padding: 16px 20px;
+	margin: 20px 0;
+	border-radius: 8px;
 	text-align: center;
-	font-weight: bold;
+	font-weight: 500;
+	border-left: 4px solid;
+	animation: slideIn 0.3s ease-out;
 }
 
+@
+keyframes slideIn {from { opacity:0;
+	transform: translateY(-10px);
+}
+
+to {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+}
 .success {
-	background-color: #d4edda;
-	color: #155724;
-	border: 1px solid #c3e6cb;
+	background: linear-gradient(135deg, #1a4d3a 0%, #0f3a28 100%);
+	color: #4ade80;
+	border-left-color: #4ade80;
+	box-shadow: 0 4px 12px rgba(74, 222, 128, 0.2);
 }
 
 .error {
-	background-color: #f8d7da;
-	color: #721c24;
-	border: 1px solid #f5c6cb;
+	background: linear-gradient(135deg, #4d1a1a 0%, #3a0f0f 100%);
+	color: #f87171;
+	border-left-color: #f87171;
+	box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
 }
 
 .loading {
-	background-color: #d1ecf1;
-	color: #0c5460;
-	border: 1px solid #bee5eb;
+	background: linear-gradient(135deg, #1a3a4d 0%, #0f2833 100%);
+	color: #38bdf8;
+	border-left-color: #38bdf8;
+	box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
 }
 
 .form-group {
-	margin-bottom: 15px;
+	margin-bottom: 20px;
 }
 
 .form-group label {
 	display: block;
-	margin-bottom: 5px;
-	font-weight: bold;
-	color: #333;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: #cccccc;
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 1px;
+}
+
+/* Animações de entrada */
+.form-container {
+	animation: fadeInUp 0.6s ease-out;
+}
+
+@
+keyframes fadeInUp {from { opacity:0;
+	transform: translateY(30px);
+}
+
+to {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+}
+
+/* Responsividade aprimorada */
+@media ( max-width : 480px) {
+	body {
+		padding: 10px;
+	}
+	.form-container {
+		padding: 30px 25px;
+		margin-bottom: 10px;
+	}
+	.header h2 {
+		font-size: 28px;
+	}
+	input[type="text"], input[type="email"], input[type="password"] {
+		padding: 14px 16px;
+		font-size: 16px;
+	}
+	button {
+		padding: 14px 20px;
+		font-size: 15px;
+	}
+}
+
+/* Melhorias de acessibilidade */
+@media ( prefers-reduced-motion : reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
 }
 </style>
 </head>
