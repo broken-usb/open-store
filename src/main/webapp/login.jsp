@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,130 +7,172 @@
 <title>Login / Cadastro</title>
 <style>
 body {
-    font-family: Arial, sans-serif;
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
+	font-family: Arial, sans-serif;
+	max-width: 400px;
+	margin: 50px auto;
+	padding: 20px;
 }
 
 .form-container {
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 5px;
-    margin-bottom: 20px;
+	border: 1px solid #ddd;
+	padding: 20px;
+	border-radius: 5px;
+	margin-bottom: 20px;
 }
 
 input[type="text"], input[type="email"], input[type="password"] {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0 15px 0;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-    box-sizing: border-box;
+	width: 100%;
+	padding: 8px;
+	margin: 5px 0 15px 0;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	box-sizing: border-box;
 }
 
 button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    margin-right: 10px;
+	background-color: #4CAF50;
+	color: white;
+	padding: 10px 15px;
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	margin-right: 10px;
 }
 
 button:hover {
-    background-color: #45a049;
+	background-color: #45a049;
 }
 
 button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+	background-color: #cccccc;
+	cursor: not-allowed;
 }
 
 .toggle-btn {
-    background-color: #008CBA;
+	background-color: #008CBA;
 }
 
 .toggle-btn:hover {
-    background-color: #007B9A;
+	background-color: #007B9A;
 }
 
 .message {
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 3px;
+	padding: 10px;
+	margin: 10px 0;
+	border-radius: 3px;
 }
 
 .success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+	background-color: #d4edda;
+	color: #155724;
+	border: 1px solid #c3e6cb;
 }
 
 .error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+	background-color: #f8d7da;
+	color: #721c24;
+	border: 1px solid #f5c6cb;
 }
 
 .loading {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
+	background-color: #d1ecf1;
+	color: #0c5460;
+	border: 1px solid #bee5eb;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 10px;
 }
 
 th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+	padding: 8px;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
 }
 
 th {
-    background-color: #f2f2f2;
+	background-color: #f2f2f2;
 }
 </style>
 </head>
 <body>
-    <h2 id="form-title">Login</h2>
+	<h2 id="form-title">Login</h2>
 
-    <div id="message-container"></div>
+	<div id="message-container"></div>
 
-    <div class="form-container">
-        <form id="user-form">
-            <div id="nome-field" style="display: none;">
-                <label for="nome">Nome:</label> 
-                <input type="text" id="nome" name="nome">
-            </div>
+	<div class="form-container">
+		<form id="user-form">
+			<div id="nome-field" style="display: none;">
+				<label for="nome">Nome:</label> <input type="text" id="nome"
+					name="nome">
+			</div>
 
-            <label for="email">Email:</label> 
-            <input type="email" id="email" name="email" required> 
-            
-            <label for="senha">Senha:</label> 
-            <input type="password" id="senha" name="senha" required>
+			<label for="email">Email:</label> <input type="email" id="email"
+				name="email" required> <label for="senha">Senha:</label> <input
+				type="password" id="senha" name="senha" required>
 
-            <button type="submit" id="submit-btn">Entrar</button>
-            <button type="button" class="toggle-btn" onclick="toggleForm()">Cadastrar</button>
-        </form>
-    </div>
+			<button type="submit" id="submit-btn">Entrar</button>
+			<button type="button" class="toggle-btn" onclick="toggleForm()">Cadastrar</button>
+		</form>
+	</div>
 
-    <div id="usuarios-list" style="display: none;">
-        <h3>Usuários Cadastrados</h3>
-        <div id="usuarios-container"></div>
-        <button onclick="listarUsuarios()">Atualizar Lista</button>
-        <button onclick="voltarLogin()">Voltar ao Login</button>
-        <button onclick="logout()">Logout</button>
-    </div>
+	<div id="usuarios-list" style="display: none;">
+		<h3>Usuários Cadastrados</h3>
+		<div id="usuarios-container"></div>
+		<button onclick="listarUsuarios()">Atualizar Lista</button>
+		<button onclick="voltarLogin()">Voltar ao Login</button>
+		<button onclick="logout()">Logout</button>
+	</div>
 
-    <script>
+	<script>
         let isLoginMode = true;
-        const contextPath = '<%= request.getContextPath() %>';
+        const contextPath = '<%=request.getContextPath()%>';
+        
+        // Verificar se já está logado ao carregar a página
+        window.addEventListener('load', function() {
+            verificarSessao();
+        });
+        
+        function verificarSessao() {
+            // Verificar se há uma sessão ativa
+            fetch(contextPath + '/verificar-sessao', {
+                method: 'GET'
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Não logado');
+            })
+            .then(usuario => {
+                // Se já está logado, redirecionar para produtos
+                if (usuario && usuario.id) {
+                    window.location.href = contextPath + '/produtos.jsp';
+                }
+            })
+            .catch(error => {
+                // Não está logado, continuar na página de login
+                console.log('Usuário não está logado');
+                testarConectividade();
+            });
+        }
+        
+        function testarConectividade() {
+            fetch(contextPath + '/usuarios')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Conexão com o servidor OK');
+                    } else {
+                        console.warn('Problema na conexão com o servidor');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro de conectividade:', error);
+                    showMessage('Problema de conexão com o servidor', 'error');
+                });
+        }
         
         function toggleForm() {
             const formTitle = document.getElementById('form-title');
@@ -222,12 +264,11 @@ th {
                     });
                 })
                 .then(usuario => {
-                    showMessage('Bem-vindo, ' + usuario.nome + '!', 'success');
+                    showMessage('Bem-vindo, ' + usuario.nome + '! Redirecionando...', 'success');
+                    // Redirecionar para a página de produtos após 1 segundo
                     setTimeout(() => {
-                        document.querySelector('.form-container').style.display = 'none';
-                        document.getElementById('usuarios-list').style.display = 'block';
-                        listarUsuarios();
-                    }, 1500);
+                        window.location.href = contextPath + '/produtos.jsp';
+                    }, 1000);
                 })
                 .catch(error => {
                     console.error('Erro no login:', error);
@@ -329,22 +370,6 @@ th {
             clearMessages();
             if (!isLoginMode) toggleForm();
         }
-        
-        // Teste de conectividade ao carregar a página
-        window.addEventListener('load', function() {
-            fetch(contextPath + '/usuarios')
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Conexão com o servidor OK');
-                    } else {
-                        console.warn('Problema na conexão com o servidor');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro de conectividade:', error);
-                    showMessage('Problema de conexão com o servidor', 'error');
-                });
-        });
     </script>
 </body>
 </html>

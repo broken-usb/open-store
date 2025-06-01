@@ -8,13 +8,48 @@
 <style>
 body {
 	font-family: Arial, sans-serif;
-	margin: 20px;
+	margin: 0;
+	padding: 0;
 	background-color: #f5f5f5;
+}
+
+.user-header {
+	background-color: #4CAF50;
+	color: white;
+	padding: 10px 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+	display: flex;
+	align-items: center;
+}
+
+.user-name {
+	margin-right: 10px;
+	font-weight: bold;
+}
+
+.logout-btn {
+	background-color: #f44336;
+	color: white;
+	border: none;
+	padding: 8px 15px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.logout-btn:hover {
+	background-color: #d32f2f;
 }
 
 .container {
 	max-width: 1200px;
-	margin: 0 auto;
+	margin: 20px auto;
 	background-color: white;
 	padding: 20px;
 	border-radius: 8px;
@@ -100,7 +135,7 @@ tr:hover {
 
 .acoes {
 	text-align: center;
-	width: 150px;
+	width: 200px;
 }
 
 .loading {
@@ -211,10 +246,48 @@ tr:hover {
 	border-radius: 4px;
 	width: 300px;
 }
+
+.not-authorized {
+	text-align: center;
+	padding: 40px;
+	color: #f44336;
+	background-color: #ffebee;
+	border-radius: 8px;
+	margin: 20px;
+}
+
+.loading-page {
+	text-align: center;
+	padding: 40px;
+	color: #666;
+}
 </style>
 </head>
 <body>
-	<div class="container">
+	<!-- Header com informações do usuário -->
+	<div class="user-header" id="userHeader" style="display: none;">
+		<div class="user-info">
+			<span>Bem-vindo, </span> <span class="user-name" id="userName">Carregando...</span>
+		</div>
+		<button class="logout-btn" onclick="logout()">Sair</button>
+	</div>
+
+	<!-- Tela de carregamento inicial -->
+	<div id="loadingPage" class="loading-page">
+		<h2>Verificando autenticação...</h2>
+		<p>Aguarde um momento...</p>
+	</div>
+
+	<!-- Tela de não autorizado -->
+	<div id="notAuthorized" class="not-authorized" style="display: none;">
+		<h2>Acesso Negado</h2>
+		<p>Você precisa estar logado para acessar esta página.</p>
+		<button class="btn btn-primary" onclick="goToLogin()">Ir para
+			Login</button>
+	</div>
+
+	<!-- Container principal -->
+	<div class="container" id="mainContainer" style="display: none;">
 		<h1>Gerenciamento de Produtos</h1>
 
 		<div class="header-actions">
@@ -294,6 +367,79 @@ tr:hover {
 	<script>
         let produtoAtual = null;
         let usuarios = [];
+        let usuarioLogado = null;
+        const contextPath = '<%=request.getContextPath()%>';
+
+        // Verificar se o usuário está logado ao carregar a página
+        window.addEventListener('load', function() {
+            verificarAutenticacao();
+        });
+
+        function verificarAutenticacao() {
+            fetch(contextPath + '/verificar-sessao', {
+                method: 'GET'
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Não autorizado');
+                }
+            })
+            .then(usuario => {
+                if (usuario && usuario.id) {
+                    usuarioLogado = usuario;
+                    mostrarPaginaAutorizada();
+                } else {
+                    mostrarPaginaNaoAutorizada();
+                }
+            })
+            .catch(error => {
+                console.error('Erro na verificação de autenticação:', error);
+                mostrarPaginaNaoAutorizada();
+            });
+        }
+
+        function mostrarPaginaAutorizada() {
+            document.getElementById('loadingPage').style.display = 'none';
+            document.getElementById('notAuthorized').style.display = 'none';
+            document.getElementById('userHeader').style.display = 'flex';
+            document.getElementById('mainContainer').style.display = 'block';
+            
+            // Mostrar nome do usuário
+            document.getElementById('userName').textContent = usuarioLogado.nome;
+            
+            // Carregar dados
+            carregarUsuarios();
+            carregarProdutos();
+        }
+
+        function mostrarPaginaNaoAutorizada() {
+            document.getElementById('loadingPage').style.display = 'none';
+            document.getElementById('userHeader').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('notAuthorized').style.display = 'block';
+        }
+
+        function goToLogin() {
+            window.location.href = contextPath + '/login.jsp';
+        }
+
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                fetch(contextPath + '/login', {
+                    method: 'GET'
+                })
+                .then(() => {
+                    window.location.href = contextPath + '/login.jsp';
+                })
+                .catch(error => {
+                    console.error('Erro no logout:', error);
+                    // Mesmo com erro, redirecionar para login
+                    window.location.href = contextPath + '/login.jsp';
+                });
+            }
+        }
 
         // Função para formatar preço em Real
         function formatarPreco(preco) {
@@ -312,7 +458,7 @@ tr:hover {
 
         // Função para carregar usuários
         function carregarUsuarios() {
-            fetch('usuarios')
+            fetch(contextPath + '/usuarios')
                 .then(response => response.json())
                 .then(data => {
                     usuarios = data;
@@ -323,6 +469,12 @@ tr:hover {
                         const option = document.createElement('option');
                         option.value = usuario.id;
                         option.textContent = usuario.nome;
+                        
+                        // Pré-selecionar o usuário logado
+                        if (usuarioLogado && usuario.id === usuarioLogado.id) {
+                            option.selected = true;
+                        }
+                        
                         select.appendChild(option);
                     });
                 })
@@ -338,7 +490,7 @@ tr:hover {
             document.getElementById('tabelaProdutos').style.display = 'none';
             document.getElementById('empty').style.display = 'none';
 
-            fetch('produtos')
+            fetch(contextPath + '/produtos')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erro na requisição');
@@ -397,7 +549,7 @@ tr:hover {
                 return;
             }
 
-            fetch('produtos?nome=' + encodeURIComponent(termo))
+            fetch(contextPath + '/produtos?nome=' + encodeURIComponent(termo))
                 .then(response => response.json())
                 .then(produtos => {
                     renderizarProdutos(produtos);
@@ -407,41 +559,50 @@ tr:hover {
                 });
         }
 
-        // Função para comprar produto (redireciona para pedidos.jsp)
+        // Função para comprar produto (exemplo simples)
         function comprarProduto(idProduto) {
-            // Redireciona para a página de pedidos com o ID do produto
-            window.location.href = 'pedidos.jsp?produtoId=' + idProduto;
+            alert('Funcionalidade de compra ainda não implementada para o produto ID: ' + idProduto);
         }
 
         // Função para abrir modal de produto
-        function abrirModalProduto() {
-            produtoAtual = null;
-            document.getElementById('tituloModal').textContent = 'Adicionar Produto';
-            document.getElementById('btnSalvar').textContent = 'Salvar';
-            document.getElementById('formProduto').reset();
-            document.getElementById('produtoId').value = '';
-            document.getElementById('modalProduto').style.display = 'block';
+        function abrirModalProduto(produto = null) {
+            produtoAtual = produto;
+            const modal = document.getElementById('modalProduto');
+            const titulo = document.getElementById('tituloModal');
+            const form = document.getElementById('formProduto');
+            
+            if (produto) {
+                titulo.textContent = 'Editar Produto';
+                document.getElementById('produtoId').value = produto.id;
+                document.getElementById('nome').value = produto.nome;
+                document.getElementById('descricao').value = produto.descricao || '';
+                document.getElementById('preco').value = produto.preco;
+                document.getElementById('idUsuario').value = produto.usuario ? produto.usuario.id : '';
+            } else {
+                titulo.textContent = 'Adicionar Produto';
+                form.reset();
+                document.getElementById('produtoId').value = '';
+                // Pré-selecionar usuário logado
+                if (usuarioLogado) {
+                    document.getElementById('idUsuario').value = usuarioLogado.id;
+                }
+            }
+            
+            modal.style.display = 'block';
         }
 
         // Função para fechar modal
         function fecharModalProduto() {
             document.getElementById('modalProduto').style.display = 'none';
+            produtoAtual = null;
         }
 
         // Função para editar produto
         function editarProduto(id) {
-            fetch('produtos?id=' + id)
+            fetch(contextPath + '/produtos?id=' + id)
                 .then(response => response.json())
                 .then(produto => {
-                    produtoAtual = produto;
-                    document.getElementById('tituloModal').textContent = 'Editar Produto';
-                    document.getElementById('btnSalvar').textContent = 'Atualizar';
-                    document.getElementById('produtoId').value = produto.id;
-                    document.getElementById('nome').value = produto.nome;
-                    document.getElementById('descricao').value = produto.descricao || '';
-                    document.getElementById('preco').value = produto.preco;
-                    document.getElementById('idUsuario').value = produto.usuario ? produto.usuario.id : '';
-                    document.getElementById('modalProduto').style.display = 'block';
+                    abrirModalProduto(produto);
                 })
                 .catch(error => {
                     console.error('Erro ao carregar produto:', error);
@@ -452,7 +613,7 @@ tr:hover {
         // Função para excluir produto
         function excluirProduto(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                fetch('produtos?id=' + id, {
+                fetch(contextPath + '/produtos?id=' + id, {
                     method: 'DELETE'
                 })
                 .then(response => {
@@ -460,7 +621,7 @@ tr:hover {
                         mostrarSucesso('Produto excluído com sucesso!');
                         carregarProdutos();
                     } else {
-                        throw new Error('Erro ao excluir produto');
+                        alert('Erro ao excluir produto');
                     }
                 })
                 .catch(error => {
@@ -470,60 +631,72 @@ tr:hover {
             }
         }
 
-        // Função para salvar produto (criar ou atualizar)
-        function salvarProduto(event) {
-            event.preventDefault();
+        // Submit do formulário
+        document.getElementById('formProduto').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            const formData = new FormData(document.getElementById('formProduto'));
+            const id = document.getElementById('produtoId').value;
+            const nome = document.getElementById('nome').value;
+            const descricao = document.getElementById('descricao').value;
+            const preco = parseFloat(document.getElementById('preco').value);
+            const idUsuario = parseInt(document.getElementById('idUsuario').value);
+            
             const produto = {
-                nome: formData.get('nome'),
-                descricao: formData.get('descricao'),
-                preco: parseFloat(formData.get('preco')),
-                idUsuario: parseInt(formData.get('idUsuario'))
+                nome: nome,
+                descricao: descricao,
+                preco: preco,
+                idUsuario: idUsuario
             };
-
-            let url = 'produtos';
-            let method = 'POST';
-
-            if (produtoAtual) {
-                produto.id = produtoAtual.id;
-                method = 'PUT';
+            
+            if (id) {
+                // Editar
+                produto.id = parseInt(id);
+                fetch(contextPath + '/produtos', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(produto)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        mostrarSucesso('Produto atualizado com sucesso!');
+                        fecharModalProduto();
+                        carregarProdutos();
+                    } else {
+                        alert('Erro ao atualizar produto');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao atualizar produto');
+                });
+            } else {
+                // Criar
+                fetch(contextPath + '/produtos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(produto)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        mostrarSucesso('Produto criado com sucesso!');
+                        fecharModalProduto();
+                        carregarProdutos();
+                    } else {
+                        alert('Erro ao criar produto');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao criar produto');
+                });
             }
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(produto)
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Erro ao salvar produto');
-                }
-            })
-            .then(result => {
-                fecharModalProduto();
-                mostrarSucesso(produtoAtual ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
-                carregarProdutos();
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao salvar produto. Verifique os dados e tente novamente.');
-            });
-        }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            carregarUsuarios();
-            carregarProdutos();
         });
 
-        document.getElementById('formProduto').addEventListener('submit', salvarProduto);
-
-        // Fechar modal ao clicar fora dele
+        // Fechar modal ao clicar fora
         window.onclick = function(event) {
             const modal = document.getElementById('modalProduto');
             if (event.target == modal) {
