@@ -498,7 +498,8 @@ tr:hover {
 
         // Função para comprar produto
         function comprarProduto(idProduto) {
-            window.location.href = 'pedidos.jsp?produtoId=' + idProduto;
+            //window.location.href = 'pedidos.jsp?produtoId=' + idProduto;
+        	window.location.href = 'pedidos.jsp?produto=' + idProduto;
         }
 
         // Função para abrir modal de produto

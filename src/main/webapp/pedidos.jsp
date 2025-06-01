@@ -1,5 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ page import="modelo.entidade.Usuario"%>
+<%
+// Verificar se o usuário está logado
+Usuario usuarioLogado = (Usuario) session.getAttribute("usuario");
+if (usuarioLogado == null) {
+	response.sendRedirect("login.jsp");
+	return;
+}
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -93,6 +102,15 @@ button {
 	background-color: #da190b;
 }
 
+.btn-voltar {
+	background-color: #2196F3;
+	color: white;
+}
+
+.btn-voltar:hover {
+	background-color: #1976D2;
+}
+
 .message {
 	padding: 15px;
 	margin: 20px 0;
@@ -119,6 +137,36 @@ button {
 	text-align: center;
 	margin: 20px 0;
 }
+
+.success-container {
+	text-align: center;
+	padding: 40px 20px;
+}
+
+.success-icon {
+	font-size: 48px;
+	color: #4CAF50;
+	margin-bottom: 20px;
+}
+
+.success-title {
+	font-size: 28px;
+	color: #4CAF50;
+	margin-bottom: 20px;
+	font-weight: bold;
+}
+
+.pedido-detalhes {
+	background-color: #f9f9f9;
+	padding: 20px;
+	border-radius: 5px;
+	margin: 20px 0;
+	text-align: left;
+}
+
+.hidden {
+	display: none;
+}
 </style>
 </head>
 <body>
@@ -127,31 +175,60 @@ button {
 
 		<div id="message-container"></div>
 
-		<div id="produto-info" class="produto-info">
-			<h3>Produto Selecionado</h3>
-			<div id="produto-detalhes">Carregando...</div>
-			<div id="produto-preco" class="preco"></div>
+		<!-- Formulário de compra -->
+		<div id="compra-form-container">
+			<div id="produto-info" class="produto-info">
+				<h3>Produto Selecionado</h3>
+				<div id="produto-detalhes">Carregando...</div>
+				<div id="produto-preco" class="preco"></div>
+			</div>
+
+			<form id="pedido-form">
+				<div class="form-group">
+					<label for="email-comprador">Seu Email:</label> <input type="email"
+						id="email-comprador" name="email" required
+						placeholder="Digite seu email para identificação"
+						value="<%=usuarioLogado.getEmail()%>" readonly> <small
+						style="color: #666;">Email do usuário logado</small>
+				</div>
+
+				<div class="buttons">
+					<button type="submit" class="btn-finalizar">Finalizar
+						Compra</button>
+					<button type="button" class="btn-cancelar"
+						onclick="cancelarCompra()">Cancelar</button>
+				</div>
+			</form>
 		</div>
 
-		<form id="pedido-form">
-			<div class="form-group">
-				<label for="email-comprador">Seu Email:</label> <input type="email"
-					id="email-comprador" name="email" required
-					placeholder="Digite seu email para identificação">
+		<!-- Tela de sucesso -->
+		<div id="success-container" class="success-container hidden">
+			<div class="success-icon">✓</div>
+			<div class="success-title">Pedido feito!</div>
+			<div class="success message">Sua compra foi realizada com
+				sucesso!</div>
+
+			<div id="pedido-detalhes" class="pedido-detalhes">
+				<!-- Detalhes do pedido serão preenchidos aqui -->
 			</div>
 
 			<div class="buttons">
-				<button type="submit" class="btn-finalizar">Finalizar
-					Compra</button>
-				<button type="button" class="btn-cancelar"
-					onclick="cancelarCompra()">Cancelar</button>
+				<button type="button" class="btn-voltar" onclick="voltarProdutos()">
+					Voltar aos Produtos</button>
 			</div>
-		</form>
+		</div>
 	</div>
 
 	<script>
         let produtoId = null;
-        let usuarioId = null;
+        let produtoAtual = null;
+        
+        // Dados do usuário logado
+        const usuarioLogado = {
+            id: <%=usuarioLogado.getId()%>,
+            nome: '<%=usuarioLogado.getNome()%>',
+            email: '<%=usuarioLogado.getEmail()%>'
+        };
         
         function getUrlParameter(name) {
             name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -162,6 +239,11 @@ button {
         
         function formatarPreco(preco) {
             return 'R$ ' + preco.toFixed(2).replace('.', ',');
+        }
+        
+        function formatarDataHora(dataHora) {
+            const data = new Date(dataHora);
+            return data.toLocaleString('pt-BR');
         }
         
         function showMessage(message, type) {
@@ -189,6 +271,7 @@ button {
                     return response.json();
                 })
                 .then(produto => {
+                    produtoAtual = produto;
                     document.getElementById('produto-detalhes').innerHTML = `
                         <strong>${produto.nome}</strong><br>
                         ${produto.descricao || 'Sem descrição'}<br>
@@ -202,72 +285,75 @@ button {
                 });
         }
         
-        function buscarUsuarioPorEmail(email) {
-            return fetch('/usuarios')
-                .then(response => response.json())
-                .then(usuarios => {
-                    const usuario = usuarios.find(u => u.email === email);
-                    if (!usuario) {
-                        throw new Error('Usuário não encontrado');
-                    }
-                    return usuario;
-                });
+        function mostrarSucesso(pedido) {
+            // Ocultar formulário de compra
+            document.getElementById('compra-form-container').classList.add('hidden');
+            
+            // Preencher detalhes do pedido - CORREÇÃO: usar concatenação em vez de template literals
+            document.getElementById('pedido-detalhes').innerHTML = 
+                '<h4>Detalhes do Pedido</h4>' +
+                '<p><strong>Número do Pedido:</strong> #' + pedido.id + '</p>' +
+                '<p><strong>Produto:</strong> ' + produtoAtual.nome + '</p>' +
+                '<p><strong>Descrição:</strong> ' + (produtoAtual.descricao || 'Sem descrição') + '</p>' +
+                '<p><strong>Preço:</strong> ' + formatarPreco(produtoAtual.preco) + '</p>' +
+                '<p><strong>Vendedor:</strong> ' + (produtoAtual.usuario ? produtoAtual.usuario.nome : 'N/A') + '</p>' +
+                '<p><strong>Comprador:</strong> ' + usuarioLogado.nome + '</p>' +
+                '<p><strong>Data do Pedido:</strong> ' + formatarDataHora(pedido.dataPedido) + '</p>';
+            
+            // Mostrar tela de sucesso
+            document.getElementById('success-container').classList.remove('hidden');
+            
+            // Limpar mensagens de erro
+            clearMessages();
         }
         
         document.getElementById('pedido-form').addEventListener('submit', function(e) {
             e.preventDefault();
             clearMessages();
             
-            const email = document.getElementById('email-comprador').value;
-            
-            if (!produtoId) {
+            if (!produtoId || !produtoAtual) {
                 showMessage('Produto não especificado!', 'error');
                 return;
             }
             
-            // Buscar usuário pelo email
-            buscarUsuarioPorEmail(email)
-                .then(usuario => {
-                    usuarioId = usuario.id;
-                    
-                    // Criar pedido
-                    const formData = new FormData();
-                    formData.append('idProduto', produtoId);
-                    formData.append('idComprador', usuarioId);
-                    
-                    return fetch('pedidos', {
-                        method: 'POST',
-                        body: formData
+            // Criar pedido usando JSON (formato esperado pelo servlet)
+            const pedidoData = {
+                idProduto: parseInt(produtoId),
+                idComprador: usuarioLogado.id
+            };
+            
+            fetch('pedidos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(pedidoData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(error.erro || 'Erro ao criar pedido');
                     });
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro ao criar pedido');
-                    }
-                    return response.json();
-                })
-                .then(pedido => {
-                    showMessage('Compra realizada com sucesso!', 'success');
-                    document.getElementById('pedido-form').reset();
-                    
-                    setTimeout(() => {
-                        window.location.href = 'produtos.jsp';
-                    }, 2000);
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    if (error.message === 'Usuário não encontrado') {
-                        showMessage('Email não cadastrado! Faça seu cadastro primeiro.', 'error');
-                    } else {
-                        showMessage('Erro ao finalizar compra!', 'error');
-                    }
-                });
+                }
+                return response.json();
+            })
+            .then(pedido => {
+                mostrarSucesso(pedido);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showMessage('Erro ao finalizar compra: ' + error.message, 'error');
+            });
         });
         
         function cancelarCompra() {
             if (confirm('Deseja cancelar a compra?')) {
                 window.location.href = 'produtos.jsp';
             }
+        }
+        
+        function voltarProdutos() {
+            window.location.href = 'produtos.jsp';
         }
         
         // Carregar produto quando a página carregar
